@@ -16,7 +16,7 @@ class Question extends Component {
     return (
       <div>
         <h2>{ question.content }</h2>
-        <h3> User: {question.user.name} </h3>
+        <h3> User: { question.user.name } </h3>
       </div>
     )
   }

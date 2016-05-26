@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux';
-import questions from 'reducers/questions';
-import questionDetail from 'reducers/questionDetail';
+import appReducer from 'reducers/appReducer';
+import bigDataPortalReducer from 'reducers/bigDataPortalReducer';
 
 const rootReducer = combineReducers({
-  questions,
-  questionDetail
+  appReducer,
+  bigDataPortalReducer
 });
 
 export default rootReducer;

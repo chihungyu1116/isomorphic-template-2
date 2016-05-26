@@ -12,10 +12,16 @@ const logger = createLogger({
   predicate: (getState, action) => true
 });
 
+// const createStoreWithMiddleware = applyMiddleware(
+//   thunkMiddleware,
+//   apiMiddleware,
+//   logger
+// )(createStore);
+
+
 const createStoreWithMiddleware = applyMiddleware(
   thunkMiddleware,
-  apiMiddleware,
-  logger
+  apiMiddleware
 )(createStore);
 
 export default function configureStore(initialState) {

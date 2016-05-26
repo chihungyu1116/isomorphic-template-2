@@ -1,0 +1,17 @@
+.com-checkbox {
+  padding: 5px;
+  line-height: 16px;
+  font-size: 16px;
+  color: #4D6878;
+  display: inline-block;
+  position: relative;
+
+  > label {
+    padding-left: 20px;
+    margin-bottom: 0;
+  }
+
+  > i {
+    position: absolute;
+  }
+}

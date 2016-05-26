@@ -1,0 +1,13 @@
+.app {
+  position: relative;
+}
+
+.app-alert {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  
+  > .alert {
+    margin: 0;
+  }
+}

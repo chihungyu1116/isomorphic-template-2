@@ -18,7 +18,7 @@ let server = new Express();
 let port = process.env.PORT || 3000;
 let scriptSrcs;
 
-let styleSrc;
+let styleSrcs;
 if ( process.env.NODE_ENV === 'production' ) {
   let assets = require('../../dist/webpack-assets.json');
   let refManifest = require('../../dist/rev-manifest.json');
@@ -26,14 +26,22 @@ if ( process.env.NODE_ENV === 'production' ) {
     `/${assets.vendor.js}`,
     `/${assets.app.js}`
   ];
-  styleSrc = `/${refManifest['main.css']}`;
+  styleSrcs = [
+    `/${refManifest['bootstrap.css']}`,
+    `/${refManifest['font-awesome.css']}`,
+    `/${refManifest['main.css']}`,
+  ];
 } else {
   scriptSrcs = [
     'http://localhost:3001/static/vendor.js',
     'http://localhost:3001/static/dev.js',
     'http://localhost:3001/static/app.js'
   ];
-  styleSrc = '/main.css';
+  styleSrcs = [
+    '/bootstrap.css',
+    '/font-awesome.css',
+    '/main.css'
+  ];
 }
 
 server.use(compression());
@@ -41,20 +49,61 @@ server.use(Express.static(path.join(__dirname, '../..', 'dist')));
 server.set('views', path.join(__dirname, 'views'));
 server.set('view engine', 'ejs');
 
-// mock apis
-server.get('/api/questions', (req, res)=> {
-  let { questions } = require('./mock_api');
-  res.send(questions);
+const mysql = require('../db/mysql');
+
+// Can assume it connect to MySQL only for now
+server.get('/api/connect_to_env', (req, res)=> {
+  const env = req.query.env.toLowerCase();
+  const pool = mysql.getOrCreatePool(env);
+
+  pool.getConnection((err, con)=> {
+    if(err) {
+      con.release();
+      res.json({"code" : 100, "status" : "Error in connection database"});
+      return;
+    }
+
+    console.log('connected as id ' + con.threadId);
+
+    con.query('show databases', (err, rows)=> {
+      con.release();
+      let data = [];
+
+      if(!err) {  
+        const excludedSqlType = ['information_schema'];
+
+        rows.forEach((row) => {
+          const sqlType = row.Database;
+          if(excludedSqlType.indexOf(sqlType) === -1) {
+            data.push({ checked: false, name: sqlType });  
+          }
+        });
+      }
+
+      res.json(data);
+    });
+
+    con.on('error', function(err) {      
+      res.json({"code" : 100, "status" : "Error in connection database"});
+      return;     
+    });
+  });
 });
 
-server.get('/api/users/:id', (req, res)=> {
-  let { getUser } = require('./mock_api')
-  res.send(getUser(req.params.id))
-})
-server.get('/api/questions/:id', (req, res)=> {
-  let { getQuestion } = require('./mock_api')
-  res.send(getQuestion(req.params.id))
-})
+// mock apis
+// server.get('/api/questions', (req, res)=> {
+//   let { questions } = require('./mock_api');
+//   res.send(questions);
+// });
+
+// server.get('/api/users/:id', (req, res)=> {
+//   let { getUser } = require('./mock_api')
+//   res.send(getUser(req.params.id))
+// })
+// server.get('/api/questions/:id', (req, res)=> {
+//   let { getQuestion } = require('./mock_api')
+//   res.send(getQuestion(req.params.id))
+// })
 
 server.get('*', (req, res, next)=> {
   let history = useQueries(createMemoryHistory)();
@@ -73,7 +122,7 @@ server.get('*', (req, res, next)=> {
       let [ getCurrentUrl, unsubscribe ] = subscribeUrl();
       let reqUrl = location.pathname + location.search;
 
-      getReduxPromise().then(()=> {
+      getReduxPromise().then((data,aa)=> {
         let reduxState = escape(JSON.stringify(store.getState()));
         let html = ReactDOMServer.renderToString(
           <Provider store={store}>
@@ -82,7 +131,7 @@ server.get('*', (req, res, next)=> {
         );
 
         if ( getCurrentUrl() === reqUrl ) {
-          res.render('index', { html, scriptSrcs, reduxState, styleSrc });
+          res.render('index', { html, scriptSrcs, reduxState, styleSrcs });
         } else {
           res.redirect(302, getCurrentUrl());
         }
@@ -92,6 +141,7 @@ server.get('*', (req, res, next)=> {
         unsubscribe();
         next(err);
       });
+
       function getReduxPromise () {
         let { query, params } = renderProps;
         let comp = renderProps.components[renderProps.components.length - 1].WrappedComponent;

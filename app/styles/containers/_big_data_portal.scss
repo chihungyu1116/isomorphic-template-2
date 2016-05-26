@@ -1,0 +1,48 @@
+.big-data-portal_nav-controls {
+  > ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #e5e5e5;
+
+    > li {
+      float: left;
+      padding: 5px 10px;
+      border-color: #e5e5e5;
+      border-width: 0 1px 0 0;
+      border-style: solid;
+      position: relative;
+
+      &:hover {
+        background: #fff;
+      }
+
+      > a {
+        display: block;
+        text-align: center;
+        color: #585858;
+
+        &:hover {
+          text-decoration: none;
+          color: #337ab7;
+        }
+
+        > i {
+          display: block;
+
+        }
+      }
+
+      > .dropdown {
+        position: absolute;
+        top: 50px;
+        left: 0;
+        padding: 10px;
+        border-color: #e5e5e5;
+        border-width: 0 1px 1px;
+        border-style: solid;
+      }
+    }
+  }
+}
